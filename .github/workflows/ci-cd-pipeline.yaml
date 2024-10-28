@@ -5,6 +5,8 @@ on:
     branches:
       - main
       - master
+    paths-ignore:
+      - 'models/model_previous.joblib'
   pull_request:
     branches:
       - main
