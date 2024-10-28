@@ -1,0 +1,100 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches:
+      - main
+      - master
+  pull_request:
+    branches:
+      - main
+      - master
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.8'
+
+      - name: Install Dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install unittest numpy scikit-learn pandas joblib
+
+      - name: Run Unit Tests
+        run: |
+          python -m unittest discover -s tests
+
+  deploy:
+    needs: build-and-test
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master'
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.8'
+
+      - name: Install Dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@v1
+        with:
+          credentials_json: ${{ secrets.GCP_SA_KEY }}
+
+      - name: Set up gcloud CLI
+        uses: google-github-actions/setup-gcloud@v1
+        with:
+          project_id: california-dataset-001
+          service_account_key: ${{ secrets.GCP_SA_KEY }}
+          export_default_credentials: true
+
+      - name: Deploy to Vertex AI
+        run: |
+          # Upload the new model
+          gcloud ai models upload \
+            --region=us-central1 \
+            --display-name="California Housing Model Updated" \
+            --container-image-uri=gcr.io/cloud-aiplatform/prediction/sklearn-cpu.1-3:latest \
+            --artifact-uri=gs://mlops-california-housing-bucket-1/models/model_deployment/
+
+          # Get the new Model ID
+          NEW_MODEL_ID=$(gcloud ai models list --filter="display_name=California Housing Model Updated" --format="value(name)")
+          echo "New Model ID: $NEW_MODEL_ID"
+
+          # Deploy the new model to the endpoint
+          gcloud ai endpoints deploy-model \
+            projects/california-dataset-001/locations/us-central1/endpoints/6780961986889908224 \
+            --region=us-central1 \
+            --model=$NEW_MODEL_ID \
+            --display-name="california-housing-model-deployment-updated" \
+            --machine-type=n1-standard-4
+
+      - name: Update Previous Model
+        run: |
+          # Copy the new model to model_previous.joblib
+          cp models/model.joblib models/model_previous.joblib
+
+          # Configure git
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+
+          # Commit and push the updated previous model
+          git add models/model_previous.joblib
+          git commit -m "Update previous model after successful deployment"
+          git push origin main
