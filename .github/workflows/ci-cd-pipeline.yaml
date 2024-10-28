@@ -99,7 +99,7 @@ jobs:
             gcloud ai endpoints undeploy-model 6780961986889908224 \
               --project=california-dataset-001 \
               --region=us-central1 \
-              --deployed-model="$MODEL_ID"
+              --deployed-model-id="$MODEL_ID"
           done
 
 
