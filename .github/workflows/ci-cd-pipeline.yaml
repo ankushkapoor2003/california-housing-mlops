@@ -111,7 +111,6 @@ jobs:
             --model="$NEW_MODEL_ID" \
             --display-name="california-housing-model-deployment-updated" \
             --machine-type=n1-standard-4 \
-            --traffic-split=100=100
 
       - name: Update Previous Model
         env:
