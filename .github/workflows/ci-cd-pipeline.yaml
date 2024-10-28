@@ -4,13 +4,11 @@ on:
   push:
     branches:
       - main
-      - master
     paths-ignore:
       - 'models/model_previous.joblib'
   pull_request:
     branches:
       - main
-      - master
 
 jobs:
   build-and-test:
@@ -29,7 +27,6 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements.txt
-          pip install numpy scikit-learn pandas joblib
 
       - name: Run Unit Tests
         run: |
@@ -57,13 +54,12 @@ jobs:
       - name: Authenticate to Google Cloud
         uses: google-github-actions/auth@v1
         with:
-          credentials_json: ${{ secrets.GCP_SA_KEY }}
+          credentials_json: '${{ secrets.GCP_SA_KEY }}'
 
       - name: Set up gcloud CLI
         uses: google-github-actions/setup-gcloud@v1
         with:
-          project_id: california-dataset-001
-          service_account_key: ${{ secrets.GCP_SA_KEY }}
+          project_id: 'california-dataset-001'  # Replace with your GCP project ID
           export_default_credentials: true
 
       - name: Deploy to Vertex AI
@@ -81,7 +77,7 @@ jobs:
 
           # Deploy the new model to the endpoint
           gcloud ai endpoints deploy-model \
-            projects/california-dataset-001/locations/us-central1/endpoints/6780961986889908224 \
+            projects/california-dataset-001/locations/us-central1/endpoints/6780961986889908224 \  # Replace with your Endpoint ID
             --region=us-central1 \
             --model=$NEW_MODEL_ID \
             --display-name="california-housing-model-deployment-updated" \
@@ -89,7 +85,7 @@ jobs:
 
       - name: Update Previous Model
         run: |
-          # Copy the new model to model_previous.joblib
+          # Copy the new model to model_previous.joblib AFTER deployment
           cp models/model.joblib models/model_previous.joblib
 
           # Configure git
