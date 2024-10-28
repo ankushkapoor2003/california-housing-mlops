@@ -87,11 +87,11 @@ jobs:
             exit 1
           fi
 
-          # Get the list of currently deployed models
+          # Get the list of currently deployed models and replace semicolons with spaces
           DEPLOYED_MODELS=$(gcloud ai endpoints describe 6780961986889908224 \
             --project=california-dataset-001 \
             --region=us-central1 \
-            --format="value(deployedModels[].id)")
+            --format="value(deployedModels[].id)" | tr ';' ' ')
 
           # Undeploy all currently deployed models
           for MODEL_ID in $DEPLOYED_MODELS; do
@@ -99,8 +99,9 @@ jobs:
             gcloud ai endpoints undeploy-model 6780961986889908224 \
               --project=california-dataset-001 \
               --region=us-central1 \
-              --deployed-model-id=$MODEL_ID
+              --deployed-model="$MODEL_ID"
           done
+
 
           # Deploy the new model to the endpoint
           gcloud ai endpoints deploy-model \
