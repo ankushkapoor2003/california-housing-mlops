@@ -68,7 +68,7 @@ class TestModelPerformance(unittest.TestCase):
             except Exception as e:
                 self.fail(f"Previous model prediction failed: {e}")
 
-            # Assert that the new model has a lower MSE
+            # Assert that the new model has lower MSE
             self.assertLess(
                 mse_current, mse_previous,
                 f"New model MSE ({mse_current}) is not less than previous model MSE ({mse_previous})."
