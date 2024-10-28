@@ -29,7 +29,7 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements.txt
-          pip install unittest numpy scikit-learn pandas joblib
+          pip install numpy scikit-learn pandas joblib
 
       - name: Run Unit Tests
         run: |
