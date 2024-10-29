@@ -7,7 +7,8 @@
 This repository implements a CI/CD pipeline for deploying a machine learning model to predict California housing prices. The pipeline is designed to automatically test, validate, and deploy the model when a new version shows performance improvements over the previous version.
 
 ## Project Structure
-
+- **`.github/`**: Stores the ci-cd pipeline yaml file for testing and deploying the models.
+  - `ci-cd-pipeline.yaml`: The pipeline yaml file for testing the new candidate model and automatically deploying the model if it passes the tests. 
 - **`models/`**: Stores the currently deployed (model_previous) and the new candidate (model) joblib files.
   - `model.joblib`: Proposed new model for deployment.
   - `model_previous.joblib`: Currently deployed model.
